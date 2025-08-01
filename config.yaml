@@ -12,5 +12,5 @@ vsock_listener:
   context_id: 0
   port: 8000
 
-aws:
-  
+signer:
+  attestations_directory: "/shared/attestations"

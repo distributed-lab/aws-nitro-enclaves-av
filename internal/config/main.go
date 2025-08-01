@@ -7,19 +7,27 @@ import (
 
 type Config interface {
 	comfig.Logger
-	comfig.Listenerer
+	InetListenerer
+	VsockListenerer
+
+	GetSigner() *Signer
 }
 
 type config struct {
 	comfig.Logger
-	comfig.Listenerer
+	InetListenerer
+	VsockListenerer
+
+	signerConfigurator comfig.Once
+
 	getter kv.Getter
 }
 
 func New(getter kv.Getter) Config {
 	return &config{
-		getter:     getter,
-		Listenerer: comfig.NewListenerer(getter),
-		Logger:     comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		getter:          getter,
+		InetListenerer:  NewInetListenerer(getter),
+		VsockListenerer: NewVsockListenerer(getter),
+		Logger:          comfig.NewLogger(getter, comfig.LoggerOpts{}),
 	}
 }

@@ -9,8 +9,9 @@ import (
 )
 
 type service struct {
-	log      *logan.Entry
-	listener net.Listener
+	log           *logan.Entry
+	inetListener  net.Listener
+	vsockListener net.Listener
 }
 
 func (s *service) run() error {
@@ -23,7 +24,7 @@ func (s *service) run() error {
 func newService(cfg config.Config) *service {
 	return &service{
 		log:      cfg.Log(),
-		listener: cfg.Listener(),
+		listener: cfg.InetListener(),
 	}
 }
 
