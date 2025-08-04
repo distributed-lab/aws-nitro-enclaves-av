@@ -5,36 +5,28 @@ import (
 	"net"
 
 	"github.com/mdlayher/vsock"
-	"gitlab.com/distributed_lab/figure/v3"
-	"gitlab.com/distributed_lab/kit/comfig"
+	figure "gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
-type VsockListenerer interface {
-	VsockListener() net.Listener
-}
-
-func NewVsockListenerer(getter kv.Getter) VsockListenerer {
-	return &vsockListener{
-		getter: getter,
-	}
-}
-
 type vsockListener struct {
-	once   comfig.Once
-	getter kv.Getter
+	net.Listener
+
+	ContextID uint32 `fig:"context_id"`
+	Port      uint32 `fig:"port,required"`
+	Disabled  bool   `fig:"disabled"`
 }
 
-func (c *vsockListener) VsockListener() net.Listener {
-	return c.once.Do(func() interface{} {
-		var cfg struct {
-			ContextID uint32 `fig:"context_id"`
-			Port      uint32 `fig:"port,required"`
-			Disabled  bool   `fig:"disabled"`
-		}
+func (l *vsockListener) IsDisabled() bool {
+	return l.Disabled
+}
+
+func (c *config) GetVsockListener() Listener {
+	return c.vsockConfigurator.Do(func() any {
+		var vsockListener vsockListener
 
 		err := figure.
-			Out(&cfg).
+			Out(&vsockListener).
 			From(kv.MustGetStringMap(c.getter, "vsock_listener")).
 			Please()
 
@@ -42,11 +34,17 @@ func (c *vsockListener) VsockListener() net.Listener {
 			panic(fmt.Errorf("failed to figure out: %w", err))
 		}
 
-		listener, err := vsock.ListenContextID(cfg.ContextID, cfg.Port, nil)
-		if err != nil {
-			panic(fmt.Errorf("failed to listen vsock on %d:%d with error: %w", cfg.ContextID, cfg.Port, err))
+		if vsockListener.IsDisabled() {
+			return &vsockListener
 		}
 
-		return listener
-	}).(net.Listener)
+		listener, err := vsock.ListenContextID(vsockListener.ContextID, vsockListener.Port, nil)
+		if err != nil {
+			panic(fmt.Errorf("failed to listen vsock on %d:%d with error: %w", vsockListener.ContextID, vsockListener.Port, err))
+		}
+
+		vsockListener.Listener = listener
+
+		return &vsockListener
+	}).(Listener)
 }

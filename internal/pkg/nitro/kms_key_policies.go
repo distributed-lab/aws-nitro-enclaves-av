@@ -7,14 +7,14 @@ import (
 )
 
 // Return PCRx condition to be used when creating a KMS key
-func PCRxCondition(pcrIndex int) string {
+func PcrXCondition(pcrIndex int) string {
 	return fmt.Sprintf("kms:RecipientAttestation:PCR%d", pcrIndex)
 }
 
 func DefaultPolicies(rootARN, principalARN string, pcrs map[int][]byte) string {
 	pcrConditions := make(map[string]string, len(pcrs))
 	for k, v := range pcrs {
-		pcrConditions[PCRxCondition(k)] = hex.EncodeToString(v)
+		pcrConditions[PcrXCondition(k)] = hex.EncodeToString(v)
 	}
 
 	defaultPolicy := map[string]interface{}{

@@ -1,12 +1,6 @@
 package cli
 
 import (
-	"context"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
-
 	"github.com/alecthomas/kingpin"
 	"github.com/distributed-lab/aws-nitro-enclaves-av/internal/config"
 	"github.com/distributed-lab/aws-nitro-enclaves-av/internal/service"
@@ -39,18 +33,6 @@ func Run(args []string) bool {
 		return false
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
-	var wg sync.WaitGroup
-	run := func(f func(context.Context, config.Config)) {
-		wg.Add(1)
-		go func() {
-			f(ctx, cfg)
-			wg.Done()
-		}()
-	}
-
 	switch cmd {
 	case serviceCmd.FullCommand():
 		service.Run(cfg)
@@ -58,28 +40,6 @@ func Run(args []string) bool {
 	default:
 		log.Errorf("unknown command %s", cmd)
 		return false
-	}
-	if err != nil {
-		log.WithError(err).Error("failed to exec cmd")
-		return false
-	}
-
-	gracefulStop := make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
-
-	wgch := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(wgch)
-	}()
-
-	select {
-	case <-ctx.Done():
-		cfg.Log().WithError(ctx.Err()).Info("Interrupt signal received")
-		stop()
-		<-wgch
-	case <-wgch:
-		cfg.Log().Warn("all services stopped")
 	}
 
 	return true

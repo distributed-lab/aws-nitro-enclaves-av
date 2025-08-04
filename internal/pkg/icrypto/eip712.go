@@ -38,7 +38,7 @@ type DomainProvider interface {
 	}, error)
 }
 
-func GetDomain(provider DomainProvider) (*Domain, error) {
+func GetDomainWithProvider(provider DomainProvider) (*Domain, error) {
 	domainData, err := provider.Eip712Domain(nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get eip712 domain: %w", err)
@@ -69,6 +69,30 @@ func GetDomain(provider DomainProvider) (*Domain, error) {
 	domain.DomainTypes = domainTypes
 
 	return domain, nil
+}
+
+func GetDomain(typedDataDomain apitypes.TypedDataDomain) *Domain {
+	domain := &Domain{}
+	domainTypes := make([]apitypes.Type, 0, 5)
+	if typedDataDomain.Name != "" {
+		domainTypes = append(domainTypes, apitypes.Type{Name: "name", Type: "string"})
+	}
+	if typedDataDomain.Version != "" {
+		domainTypes = append(domainTypes, apitypes.Type{Name: "version", Type: "string"})
+	}
+	if typedDataDomain.ChainId != nil {
+		domainTypes = append(domainTypes, apitypes.Type{Name: "chainId", Type: "uint256"})
+	}
+	if typedDataDomain.VerifyingContract != "" {
+		domainTypes = append(domainTypes, apitypes.Type{Name: "verifyingContract", Type: "address"})
+	}
+	if typedDataDomain.Salt != "" {
+		domainTypes = append(domainTypes, apitypes.Type{Name: "salt", Type: "bytes32"})
+	}
+	domain.DomainTypes = domainTypes
+	domain.TypedDataDomain = typedDataDomain
+
+	return domain
 }
 
 func (d *Domain) TypedDataAndHash(message *Message) (hash []byte, rawData string, err error) {

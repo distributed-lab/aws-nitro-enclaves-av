@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/distributed-lab/aws-nitro-enclaves-av/internal/pkg/nitro"
 	"github.com/ethereum/go-ethereum/crypto"
-	"gitlab.com/distributed_lab/figure/v3"
+	figure "gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
@@ -24,7 +22,7 @@ func (s *Signer) Sign(data []byte) ([]byte, error) {
 }
 
 func (c *config) GetSigner() *Signer {
-	return c.signerConfigurator.Do(func() interface{} {
+	return c.signerConfigurator.Do(func() any {
 		var cfg struct {
 			AttestationsDirectory string `fig:"attestations_directory,required"`
 		}
@@ -46,30 +44,27 @@ func (c *config) GetSigner() *Signer {
 			panic(fmt.Errorf("failed to load AWS config: %w", err))
 		}
 
-		rootArn, principalArn, err := nitro.GetArns(awsConfig)
+		kmsKeyID, err := nitro.GetAttestedKMSKeyID(awsConfig, cfg.AttestationsDirectory)
 		if err != nil {
-			panic(fmt.Errorf("failed to get arns: %w", err))
+			panic(fmt.Errorf("failed to get attested KMS Key ID: %w", err))
 		}
 
-		_, pcr0Value, err := nitro.DescribePCR(0)
+		privateKey, err := nitro.GetAttestedPrivateKey(awsConfig, kmsKeyID, cfg.AttestationsDirectory)
 		if err != nil {
-			panic(fmt.Errorf("failed to get PCR0 value: %w", err))
+			panic(fmt.Errorf("failed to get attested private key: %w", err))
 		}
 
-		kmsKeyPolicy := nitro.DefaultPolicies(rootArn, principalArn, map[int][]byte{0: pcr0Value})
-
-		kmsEnclaveClient, err := nitro.GetKMSEnclaveClient(awsConfig)
+		publicKey, err := nitro.GetAttestedPublicKey(privateKey, cfg.AttestationsDirectory)
 		if err != nil {
-			panic(fmt.Errorf("failed to get kms enclave client: %w", err))
+			panic(fmt.Errorf("failed to get attested public key: %w", err))
 		}
 
-		createKeyOutput, err := kmsEnclaveClient.CreateKey(context.Background(), &kms.CreateKeyInput{
-			// DANGER: The key may become unmanageable
-			BypassPolicyLockoutSafetyCheck: true,
-			Description:                    aws.String("Nitro Enclave Key"),
-			Policy:                         aws.String(kmsKeyPolicy),
-		})
+		if _, err = nitro.GetAttestedAddress(publicKey, cfg.AttestationsDirectory); err != nil {
+			panic(fmt.Errorf("failed to get attested address: %w", err))
+		}
 
-		return &cfg
+		return &Signer{
+			pk: privateKey,
+		}
 	}).(*Signer)
 }

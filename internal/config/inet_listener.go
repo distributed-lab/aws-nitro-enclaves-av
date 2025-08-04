@@ -4,35 +4,27 @@ import (
 	"fmt"
 	"net"
 
-	"gitlab.com/distributed_lab/figure/v3"
-	"gitlab.com/distributed_lab/kit/comfig"
+	figure "gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
 )
 
-type InetListenerer interface {
-	InetListener() net.Listener
-}
-
-func NewInetListenerer(getter kv.Getter) InetListenerer {
-	return &inetListener{
-		getter: getter,
-	}
-}
-
 type inetListener struct {
-	once   comfig.Once
-	getter kv.Getter
+	net.Listener
+
+	Addr     string `fig:"addr,required"`
+	Disabled bool   `fig:"disabled"`
 }
 
-func (c *inetListener) InetListener() net.Listener {
-	return c.once.Do(func() interface{} {
-		var cfg struct {
-			Addr     string `fig:"addr,required"`
-			Disabled bool   `fig:"disabled"`
-		}
+func (l *inetListener) IsDisabled() bool {
+	return l.Disabled
+}
+
+func (c *config) GetInetListener() Listener {
+	return c.inetConfigurator.Do(func() any {
+		var inetListener inetListener
 
 		err := figure.
-			Out(&cfg).
+			Out(&inetListener).
 			From(kv.MustGetStringMap(c.getter, "inet_listener")).
 			Please()
 
@@ -40,11 +32,17 @@ func (c *inetListener) InetListener() net.Listener {
 			panic(fmt.Errorf("failed to figure out: %w", err))
 		}
 
-		listener, err := net.Listen("tcp", cfg.Addr)
-		if err != nil {
-			panic(fmt.Errorf("failed to listen inet on %s with error: %w", cfg.Addr, err))
+		if inetListener.IsDisabled() {
+			return &inetListener
 		}
 
-		return listener
-	}).(net.Listener)
+		listener, err := net.Listen("tcp", inetListener.Addr)
+		if err != nil {
+			panic(fmt.Errorf("failed to listen inet on %s with error: %w", inetListener.Addr, err))
+		}
+
+		inetListener.Listener = listener
+
+		return &inetListener
+	}).(Listener)
 }

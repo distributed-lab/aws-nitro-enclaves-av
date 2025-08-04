@@ -14,10 +14,11 @@ func (s *service) router() chi.Router {
 		ape.LoganMiddleware(s.log),
 		ape.CtxMiddleware(
 			handlers.CtxLog(s.log),
+			handlers.CtxSigner(s.signer),
 		),
 	)
-	r.Route("/integrations/aws-nitro-enclaves-av", func(r chi.Router) {
-		// configure endpoints here
+	r.Route("/v1", func(r chi.Router) {
+		r.Post("/attestations", handlers.VerifyAttestation)
 	})
 
 	return r

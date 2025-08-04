@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/distributed-lab/aws-nitro-enclaves-av/resources"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -22,6 +24,16 @@ func NewSignAttestation(r *http.Request) (req resources.SignAttestationsRequest,
 		"data/attributes/attestation": validation.Validate(attr.Attestation, validation.Required, is.Base64),
 	}
 
+	if len(attr.FieldsToSign) == 0 {
+		attr.FieldsToSign = []string{"pcr0", "public_key"}
+	}
+
+	if attr.PrimaryType == nil {
+		attr.PrimaryType = asPointer("Register")
+	}
+
+	errs["data/attributes/fields_to_sign"] = validateAttestationFields(attr.FieldsToSign)
+
 	return req, errs.Filter()
 }
 
@@ -29,4 +41,34 @@ func newDecodeError(what string, err error) error {
 	return validation.Errors{
 		what: fmt.Errorf("decode request %s: %w", what, err),
 	}
+}
+
+func asPointer[T any](v T) *T {
+	return &v
+}
+
+func validateAttestationFields(fields []string) error {
+	if len(fields) == 0 {
+		return fmt.Errorf("fields to sign cannot be empty")
+	}
+
+	for _, field := range fields {
+		if field == "public_key" || field == "user_data" ||
+			field == "nonce" || field == "module_id" ||
+			field == "digest" || field == "timestamp" {
+			continue
+		}
+		if !strings.HasPrefix(field, "pcr") {
+			return fmt.Errorf("invalid field to sign: %s, must be one of [pcr0, pcr1, ..., pcr31, public_key, user_data, nonce, module_id, digest, timestamp]", field)
+		}
+
+		pcrNum := field[3:]
+
+		// 5 bit because currently maximum count of pcr in nsm module is 32
+		if _, err := strconv.ParseUint(pcrNum, 10, 5); err != nil {
+			return fmt.Errorf("invalid field to sign: %s, must be one of [pcr0, pcr1, ..., pcr31, public_key, user_data, nonce, module_id, digest, timestamp]", field)
+		}
+	}
+
+	return nil
 }
