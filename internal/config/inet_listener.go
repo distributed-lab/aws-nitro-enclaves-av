@@ -11,7 +11,7 @@ import (
 type inetListener struct {
 	net.Listener
 
-	Addr     string `fig:"addr,required"`
+	Address  string `fig:"addr,required"`
 	Disabled bool   `fig:"disabled"`
 }
 
@@ -36,9 +36,9 @@ func (c *config) GetInetListener() Listener {
 			return &inetListener
 		}
 
-		listener, err := net.Listen("tcp", inetListener.Addr)
+		listener, err := net.Listen("tcp", inetListener.Address)
 		if err != nil {
-			panic(fmt.Errorf("failed to listen inet on %s with error: %w", inetListener.Addr, err))
+			panic(fmt.Errorf("failed to listen inet on %s with error: %w", inetListener.Address, err))
 		}
 
 		inetListener.Listener = listener

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/distributed-lab/aws-nitro-enclaves-av/internal/pkg/utils"
 	"github.com/distributed-lab/aws-nitro-enclaves-av/resources"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
@@ -18,18 +19,18 @@ func NewSignAttestation(r *http.Request) (req resources.SignAttestationsRequest,
 		return req, err
 	}
 
-	attr := req.Data.Attributes
+	attr := &req.Data.Attributes
 	errs := validation.Errors{
 		"data/type":                   validation.Validate(req.Data.Type, validation.Required, validation.In(resources.ATTESTATIONS)),
 		"data/attributes/attestation": validation.Validate(attr.Attestation, validation.Required, is.Base64),
 	}
 
 	if len(attr.FieldsToSign) == 0 {
-		attr.FieldsToSign = []string{"pcr0", "public_key"}
+		attr.FieldsToSign = append([]string{}, utils.DefaultFieldsToSign...)
 	}
 
-	if attr.PrimaryType == nil {
-		attr.PrimaryType = asPointer("Register")
+	if attr.PrimaryType == nil || len(*attr.PrimaryType) == 0 {
+		attr.PrimaryType = utils.AsPointer(utils.DefaultPrimaryType)
 	}
 
 	errs["data/attributes/fields_to_sign"] = validateAttestationFields(attr.FieldsToSign)
@@ -41,10 +42,6 @@ func newDecodeError(what string, err error) error {
 	return validation.Errors{
 		what: fmt.Errorf("decode request %s: %w", what, err),
 	}
-}
-
-func asPointer[T any](v T) *T {
-	return &v
 }
 
 func validateAttestationFields(fields []string) error {

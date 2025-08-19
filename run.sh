@@ -5,8 +5,6 @@ echo "Starting"
 sleep 5
 
 echo "Setup /etc/hosts"
-echo "127.0.0.2   kms.us-east-1.amazonaws.com kms.us-east-2.amazonaws.com kms.us-west-1.amazonaws.com kms.us-west-2.amazonaws.com kms.ap-south-1.amazonaws.com kms.ap-northeast-1.amazonaws.com kms.ap-northeast-2.amazonaws.com kms.ap-northeast-3.amazonaws.com kms.ap-southeast-1.amazonaws.com kms.ap-southeast-2.amazonaws.com kms.ca-central-1.amazonaws.com kms.eu-central-1.amazonaws.com kms.eu-west-1.amazonaws.com kms.eu-west-2.amazonaws.com kms.eu-west-3.amazonaws.com kms.eu-north-1.amazonaws.com kms.sa-east-1.amazonaws.com" >>/etc/hosts
-echo "127.0.0.3   sts.us-east-1.amazonaws.com sts.us-east-2.amazonaws.com sts.us-west-1.amazonaws.com sts.us-west-2.amazonaws.com sts.ap-south-1.amazonaws.com sts.ap-northeast-1.amazonaws.com sts.ap-northeast-2.amazonaws.com sts.ap-northeast-3.amazonaws.com sts.ap-southeast-1.amazonaws.com sts.ap-southeast-2.amazonaws.com sts.ca-central-1.amazonaws.com sts.eu-central-1.amazonaws.com sts.eu-west-1.amazonaws.com sts.eu-west-2.amazonaws.com sts.eu-west-3.amazonaws.com sts.eu-north-1.amazonaws.com sts.sa-east-1.amazonaws.com" >>/etc/hosts
 
 # Forwarding rules
 # '->' forward traffic from Enclave to EC2
@@ -56,10 +54,12 @@ sleep 5
 
 # TOOD: Add validation
 TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
-REGION=`curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region`
+echo "Token: $TOKEN"
+AWS_REGION=`curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region`
+echo "Region: $AWS_REGION"
 
-echo "127.0.0.2   kms.$REGION.amazonaws.com" >>/etc/hosts
-echo "127.0.0.3   sts.$REGION.amazonaws.com" >>/etc/hosts
+echo "127.0.0.2   kms.$AWS_REGION.amazonaws.com" >>/etc/hosts
+echo "127.0.0.3   sts.$AWS_REGION.amazonaws.com" >>/etc/hosts
 
 echo "Mounting persistent volume to /shared"
 mkdir -p /shared
@@ -67,4 +67,4 @@ mount -t nfs4 127.0.0.200:/ /shared
 sleep 5
 
 echo "Start main process"
-KV_VIPER_FILE=/shared/config.yaml aws-nitro-enclaves-av run service
+su - user -c "AWS_REGION=$AWS_REGION KV_VIPER_FILE=/shared/config.yaml aws-nitro-enclaves-av run service"
