@@ -29,14 +29,15 @@ var (
 	ErrInvalidField = errors.New("invalid attestation document field")
 )
 
-func BuildTypedDataAttestationMessage(attestationDocument *attestation.NSMAttestationDoc, primaryType string, fields map[string]struct{}) (*icrypto.Message, error) {
+// fields must not have duplicate items
+func BuildTypedDataAttestationMessage(attestationDocument *attestation.NSMAttestationDoc, primaryType string, fields []string) (*icrypto.Message, error) {
 	if attestationDocument == nil {
 		return nil, fmt.Errorf("attestation document shouldn't be nil")
 	}
 
 	dataTypes := make([]apitypes.Type, 0, len(fields))
 	dataValues := make(apitypes.TypedDataMessage, len(fields))
-	for field := range fields {
+	for _, field := range fields {
 		if dataType, ok := fieldToType[field]; ok {
 			dataTypes = append(dataTypes, dataType)
 		}

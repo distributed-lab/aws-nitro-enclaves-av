@@ -7,6 +7,8 @@
 ## Build
   Make sure that `docker` and `nitro-cli` installed and that processor architecture where you are building the service is x86-64 (amd64).
 
+  See [How to run](#how-to-run) to install docker.
+
   Clone repo:
   ```
   git clone https://github.com/distributed-lab/aws-nitro-enclaves-av.git
@@ -68,6 +70,7 @@ make install
 7. Setup directory for storing service persistent files:
 ```bash
 export SERVICE_DIR="/export/attestation-verifier"
+mkdir -p $SERVICE_DIR
 chmod 755 $SERVICE_DIR
 chown -R ec2-user:ec2-user $SERVICE_DIR
 ```
@@ -171,7 +174,7 @@ Endpoint: `v1/attestations`
 ## Testing
 To run the tests, you need to repeat all the steps described in the [How to run](#how-to-run) section, except for actually launching the enclave.
 
-You need to install golang on the EC2 instance and copy the attestation documents from `tests/attestations` to `$SERVICE_DIR/attestations`
+You need to install golang on the EC2 instance.
 
 Start service in enclave debug mode:
 ```bash

@@ -42,9 +42,14 @@ func VerifyAttestation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fields := make(map[string]struct{}, len(req.Data.Attributes.FieldsToSign))
+	presentFields := make(map[string]struct{}, len(req.Data.Attributes.FieldsToSign))
+	fields := make([]string, 0, len(req.Data.Attributes.FieldsToSign))
 	for _, field := range req.Data.Attributes.FieldsToSign {
-		fields[field] = struct{}{}
+		if _, ok := presentFields[field]; ok {
+			continue
+		}
+		presentFields[field] = struct{}{}
+		fields = append(fields, field)
 	}
 
 	typedDataMessage, err := utils.BuildTypedDataAttestationMessage(attestationDocument, *primaryType, fields)
