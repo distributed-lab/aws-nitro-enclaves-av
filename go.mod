@@ -4,14 +4,14 @@ go 1.23.0
 
 require (
 	github.com/alecthomas/kingpin v2.2.6+incompatible
-	github.com/aws/aws-sdk-go-v2 v1.37.0
+	github.com/aws/aws-sdk-go-v2 v1.39.1
 	github.com/aws/aws-sdk-go-v2/config v1.30.1
-	github.com/aws/aws-sdk-go-v2/service/kms v1.41.3
-	github.com/aws/aws-sdk-go-v2/service/sts v1.35.0
+	github.com/aws/aws-sdk-go-v2/service/kms v1.45.4
+	github.com/aws/aws-sdk-go-v2/service/sts v1.38.5
 	github.com/distributed-lab/enclave-extras/attestation v0.2.0
 	github.com/distributed-lab/enclave-extras/attestedkms v0.1.1
 	github.com/distributed-lab/enclave-extras/nsm v0.2.0
-	github.com/ethereum/go-ethereum v1.16.1
+	github.com/ethereum/go-ethereum v1.16.3
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
 	github.com/mdlayher/vsock v1.2.1
@@ -30,14 +30,14 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.1 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.0 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.0 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.8 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.8 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.26.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.31.0 // indirect
-	github.com/aws/smithy-go v1.22.5 // indirect
+	github.com/aws/smithy-go v1.23.0 // indirect
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
 	github.com/consensys/gnark-crypto v0.18.0 // indirect
@@ -46,6 +46,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
+	github.com/distributed-lab/enclave-extras/nitro v0.0.0-20250924132249-b40f940eba45 // indirect
 	github.com/ethereum/c-kzg-4844/v2 v2.1.0 // indirect
 	github.com/ethereum/go-verkle v0.2.2 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

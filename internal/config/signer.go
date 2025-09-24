@@ -7,7 +7,7 @@ import (
 	"os"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/distributed-lab/aws-nitro-enclaves-av/internal/pkg/nitro"
+	"github.com/distributed-lab/enclave-extras/nitro"
 	"github.com/ethereum/go-ethereum/crypto"
 	figure "gitlab.com/distributed_lab/figure/v3"
 	"gitlab.com/distributed_lab/kit/kv"
