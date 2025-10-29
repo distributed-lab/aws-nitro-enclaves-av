@@ -1,0 +1,56 @@
+services:
+  attestation-verifier:
+    image: attestation-verifier:v0.1.0
+    privileged: true
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      AWS_REGION: us-east-1
+      NFS_SERVER: nfs:2049
+      HTTP_PORT: 
+
+      ENCLAVE_CID: 16
+      CPU_COUNT: 4
+      MEMORY_MIB: 6292
+      EXTRA_OPTIONS: --debug-mode
+    pre_stop:
+      - command: /opt/prestop-hook.sh
+        user: root
+        privileged: true
+    depends_on:
+      nfs:
+        condition: service_healthy
+
+  nfs:
+    image: erichough/nfs-server
+    # NFS is linux kernel module
+    cap_add:
+      - SYS_ADMIN
+    ports:
+      - 2049:2049
+    # This directory is necessary because the container's
+    # file system does not support exporting to NFS.
+    tmpfs:
+      - "/export"
+    volumes:
+      - "attestation-verifier:/export/attestation-verifier"
+      - "./config.yaml:/export/attestation-verifier/config.yaml"
+    # all_squash - all clients mapped to anonymous user and group
+    # anonuid and anongid - anonymous user and group respectively
+    # insecure - allows clients to connect from ports higher than 1024
+    # NFS_EXPORT_0 - required to set the root point exportfs with fsid=0
+    environment:
+      NFS_EXPORT_0: '/export *(ro,insecure,fsid=0,no_subtree_check,all_squash,anonuid=1000,anongid=1000)'
+      NFS_EXPORT_1: '/export/attestation-verifier *(rw,insecure,no_subtree_check,sync,all_squash,anonuid=1000,anongid=1000)'
+      NFS_DISABLE_VERSION_3: 1
+    # Since nfs forces uid and gid 1000, volumes must also have the same owner and group.
+    post_start:
+      - command: chown -R 1000:1000 /export
+        user: root
+    # Wait ~6m to nfsd started: https://www.spinics.net/lists/linux-nfs/msg59728.html
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 6m
+
+volumes:
+  attestation-verifier:
