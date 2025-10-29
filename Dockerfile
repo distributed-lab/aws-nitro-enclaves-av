@@ -5,7 +5,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
 RUN mkdir -p target/bin
-RUN CGO_ENABLED=1 GO111MODULE=on GOOS=linux go build -trimpath -buildvcs=false -ldflags="-s -w" -o target/bin/aws-nitro-enclaves-av .
+RUN CGO_ENABLED=1 GO111MODULE=on GOOS=linux go build -trimpath -buildvcs=false -ldflags="-s -w" -o target/bin/attestation-verifier .
 
 
 FROM debian:bookworm-slim@sha256:9852c9b122fa2dce95ea33a096292ce649a12a7ff321a6a6f1a40eca4989a9fc AS attestation-verifier-base
@@ -22,8 +22,7 @@ RUN apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=buildbase /workspace/target/bin/aws-nitro-enclaves-av /usr/local/bin/aws-nitro-enclaves-av
-COPY --from=socat-builder /usr/local/bin/socat /usr/local/bin/
+COPY --from=buildbase /workspace/target/bin/attestation-verifier /usr/local/bin/attestation-verifier
 
 COPY enclave/run.sh /opt/run.sh
 RUN chmod +x /opt/run.sh
@@ -31,7 +30,6 @@ RUN chmod +x /opt/run.sh
 ENTRYPOINT [ "/opt/run.sh" ]
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023
-COPY --from=socat-builder /usr/local/bin/socat /usr/local/bin/
 RUN yum install aws-nitro-enclaves-cli aws-nitro-enclaves-cli-devel socat -y
 
 COPY output/attestation-verifier.eif /root

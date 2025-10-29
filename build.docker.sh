@@ -8,4 +8,4 @@ if [ ! -f "$EIF_PATH" ]; then
 	./build.sh
 fi
 
-docker build -t attestation-verifier:latest --target .
+docker build -t attestation-verifier:latest .

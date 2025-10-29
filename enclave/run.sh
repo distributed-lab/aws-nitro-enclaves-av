@@ -36,9 +36,9 @@ echo "127.0.0.2   kms.$AWS_REGION.amazonaws.com" >>/etc/hosts
 echo "127.0.0.3   sts.$AWS_REGION.amazonaws.com" >>/etc/hosts
 
 echo "Mounting persistent volume"
-mkdir -p /etc/aws-nitro-enclaves-av
-mount -t nfs4 127.0.0.200:/aws-nitro-enclaves-av /etc/aws-nitro-enclaves-av
+mkdir -p /opt/attestation-verifier
+mount -t nfs4 127.0.0.200:/attestation-verifier /opt/attestation-verifier
 sleep 1
 
 echo "Start main process"
-AWS_REGION=$AWS_REGION KV_VIPER_FILE=/etc/aws-nitro-enclaves-av/config.yaml aws-nitro-enclaves-av run service
+AWS_REGION=$AWS_REGION KV_VIPER_FILE=/opt/attestation-verifier/config.yaml attestation-verifier run service
