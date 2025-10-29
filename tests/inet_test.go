@@ -16,7 +16,7 @@ import (
 const inetRequestURL = "http://127.0.0.1:8000"
 
 func TestInetHttpAttestations(t *testing.T) {
-	attestationDocRaw, err := os.ReadFile(addressAttDocPath)
+	attestationDocRaw, err := os.ReadFile("volume/attestations/address.coses1")
 	require.NoError(t, err, "failed to read attestation document with address")
 
 	attestationDoc, err := attestation.ParseNSMAttestationDoc(attestationDocRaw)

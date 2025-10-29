@@ -13,7 +13,7 @@ import (
 )
 
 func TestVsockHttpAttestations(t *testing.T) {
-	attestationDocRaw, err := os.ReadFile(addressAttDocPath)
+	attestationDocRaw, err := os.ReadFile("volume/attestations/address.coses1")
 	require.NoError(t, err, "failed to read attestation document with address")
 
 	attestationDoc, err := attestation.ParseNSMAttestationDoc(attestationDocRaw)

@@ -14,7 +14,8 @@ import (
 )
 
 type Signer struct {
-	pk *ecdsa.PrivateKey
+	AttestationsDirectory string
+	pk                    *ecdsa.PrivateKey
 }
 
 func (s *Signer) Sign(data []byte) ([]byte, error) {
@@ -64,7 +65,8 @@ func (c *config) GetSigner() *Signer {
 		}
 
 		return &Signer{
-			pk: privateKey,
+			AttestationsDirectory: cfg.AttestationsDirectory,
+			pk:                    privateKey,
 		}
 	}).(*Signer)
 }

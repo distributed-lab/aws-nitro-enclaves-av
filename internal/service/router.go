@@ -17,8 +17,13 @@ func (s *service) router() chi.Router {
 			handlers.CtxSigner(s.signer),
 		),
 	)
+
 	r.Route("/v1", func(r chi.Router) {
 		r.Post("/attestations", handlers.VerifyAttestation)
+		r.Route("/attestation-documents", func(r chi.Router) {
+			r.Get("/address", handlers.GetAddressAttestationDoc)
+			r.Get("/public-key", handlers.GetPublicKeyAttestationDoc)
+		})
 	})
 
 	return r
