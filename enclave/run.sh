@@ -8,6 +8,31 @@ echo "Up loopback interface"
 ip link set lo up || true
 sleep 1
 
+echo "Ensure loopback addresses exist"
+# AWS KMS
+if ! ip addr show dev lo | grep -q "127.0.0.2"; then
+  ip addr add 127.0.0.2/32 dev lo:0
+  ip link set dev lo:0 up
+fi
+# AWS STS
+if ! ip addr show dev lo | grep -q "127.0.0.3"; then
+  ip addr add 127.0.0.3/32 dev lo:0
+  ip link set dev lo:0 up
+fi
+# NFS
+if ! ip addr show dev lo | grep -q "127.0.0.200"; then
+  ip addr add 127.0.0.200/32 dev lo:0
+  ip link set dev lo:0 up
+fi
+# AWS IMDS
+if ! ip addr show dev lo | grep -q "169.254.169.254"; then
+  ip addr add 169.254.169.254/32 dev lo:0
+  ip link set dev lo:0 up
+fi
+
+echo "Some sleep..."
+sleep 1
+
 # AWS Services
 echo "Start AWS IMDS egress vsock proxy"
 socat TCP-LISTEN:80,bind=169.254.169.254,fork,reuseaddr,keepalive VSOCK-CONNECT:3:8001,keepalive &

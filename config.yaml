@@ -12,4 +12,4 @@ vsock_listener:
   port: 8000
 
 signer:
-  attestations_directory: "//attestations"
+  attestations_directory: "/opt/attestation-verifier/attestations"

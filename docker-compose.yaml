@@ -33,8 +33,8 @@ services:
     tmpfs:
       - "/export"
     volumes:
-      - "attestation-verifier:/export/attestation-verifier"
-      - "./config.yaml:/export/attestation-verifier/config.yaml"
+      - "./volume:/export/attestation-verifier"
+      - "./config.yaml:/export/attestation-verifier/nonexportable/config.yaml"
     # all_squash - all clients mapped to anonymous user and group
     # anonuid and anongid - anonymous user and group respectively
     # insecure - allows clients to connect from ports higher than 1024
@@ -45,12 +45,11 @@ services:
       NFS_DISABLE_VERSION_3: 1
     # Since nfs forces uid and gid 1000, volumes must also have the same owner and group.
     post_start:
+      - command: cp /export/attestation-verifier/nonexportable/config.yaml /export/attestation-verifier/config.yaml
+        user: root
       - command: chown -R 1000:1000 /export
         user: root
     # Wait ~6m to nfsd started: https://www.spinics.net/lists/linux-nfs/msg59728.html
     healthcheck:
       test: ["CMD", "true"]
       interval: 6m
-
-volumes:
-  attestation-verifier:
