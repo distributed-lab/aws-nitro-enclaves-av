@@ -6,5 +6,3 @@ config.*.yaml
 docs/
 vendor/
 generate.sh
-output
-volume
