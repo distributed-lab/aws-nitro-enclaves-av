@@ -65,12 +65,16 @@ sudo modprobe nfs
 sudo modprobe nfsd
 ```
 
-2. Run docker compose (it takes ~ 6 minutes)
+2. Change in `docker-compose.yaml`:
+`AWS_REGION` to region where you running EC2 instance
+Other params should work by default
+
+3. Run docker compose (it takes ~ 6 minutes)
 ```bash
 docker compose up
 ```
 
-3. If this is not the first launch, the attestation documents from the previous launch must be placed in `volume/attestations`. If any documents are missing, they will be automatically generated in the following sequence: `kms_key_id.coses1` -> `private_key.coses1` -> `public_key.coses1` -> `address.coses1`.
+4. If this is not the first launch, the attestation documents from the previous launch must be placed in `volume/attestations`. If any documents are missing, they will be automatically generated in the following sequence: `kms_key_id.coses1` -> `private_key.coses1` -> `public_key.coses1` -> `address.coses1`.
 
 If this is the first launch, you can find the generated attestation documents in the `volume/attestations` directory.
 

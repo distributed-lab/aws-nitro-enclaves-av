@@ -7,11 +7,12 @@ services:
     environment:
       AWS_REGION: us-east-1
       NFS_SERVER: nfs:2049
+
       HTTP_PORT: 8000
 
       ENCLAVE_CID: 16
-      CPU_COUNT: 4
-      MEMORY_MIB: 6292
+      CPU_COUNT: 2
+      MEMORY_MIB: 1024
       EXTRA_OPTIONS: --debug-mode
     pre_stop:
       - command: /opt/prestop-hook.sh
